@@ -126,3 +126,6 @@ for title, count in title_counts.items():
     print(f"{title}: {count} sections")
 
 assert len(docs_sections) == sum(title_counts.values())
+
+with open("blog.json", "w", encoding="utf-8") as f_out:
+    json.dump(docs_sections, f_out, indent=2, default=str)

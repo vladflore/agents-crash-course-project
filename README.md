@@ -13,3 +13,10 @@ uv add weaviate-client
 ```shell
 docker compose exec -ti weaviate sh -c "wget --header=\"Content-Type: application/x-www-form-urlencoded\" --post-data=\$'{\\n  \"model\": \"llama3.2:latest\",\\n  \"prompt\": \"Why is the sky blue?\"\\n}' --output-document - http://host.docker.internal:11434/api/generate"
 ```
+
+http://localhost:8080/v1/schema/Blog
+
+```shell
+curl -X POST http://127.0.0.1:11434/api/embed -d '{"model": "nomic-embed-text", "input": "test"}'
+curl -X POST http://127.0.0.1:11434/api/embed -d '{"model": "mxbai-embed-large", "input": "test"}'
+```

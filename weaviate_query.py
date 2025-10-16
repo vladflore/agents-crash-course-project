@@ -3,10 +3,10 @@ import json
 
 client = weaviate.connect_to_local()
 
-questions = client.collections.use("Question")
+questions = client.collections.use("Blog")
 
 response = questions.query.near_text(
-    query="biology",
+    query="Is there a mention of some renound american university where AI is being thought?",
     limit=2
 )
 
