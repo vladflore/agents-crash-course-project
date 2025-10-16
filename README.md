@@ -3,24 +3,12 @@ https://docs.weaviate.io/weaviate/quickstart/local?__hstc=13542376.f55c3263c3548
 ```shell
 ollama pull nomic-embed-text
 ollama pull llama3.2
-```
 
-- docker compose yaml file for spinning a ruinning weaviate instance
-
-```shell
-docker-compose up -d
-```
-
-```shell
+docker compose up -d
 docker compose down
-```
 
-```shell
 uv add weaviate-client
 ```
-
-- create a collection
-- check readiness of db and if the collection exists
 
 ```shell
 docker compose exec -ti weaviate sh -c "wget --header=\"Content-Type: application/x-www-form-urlencoded\" --post-data=\$'{\\n  \"model\": \"llama3.2:latest\",\\n  \"prompt\": \"Why is the sky blue?\"\\n}' --output-document - http://host.docker.internal:11434/api/generate"

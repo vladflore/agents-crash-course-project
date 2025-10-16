@@ -31,4 +31,4 @@ collections = client.collections.list_all()
 if collection_name in collections:
     print(f"{collection_name} created successfully.")
 
-client.close()  # Free up resources
+client.close()
