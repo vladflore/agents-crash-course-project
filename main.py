@@ -115,7 +115,8 @@ for doc in vladflore_dot_tech_docs:
 
 print(f"{len(docs_sections)} sections")
 
-print(json.dumps(docs_sections[0], default=str, indent=2))
+for section in docs_sections[:7]:
+    print(json.dumps(section, default=str, indent=2))
 
 title_counts = defaultdict(int)
 for doc_section in docs_sections:
