@@ -4,6 +4,8 @@ import requests
 import frontmatter
 import os
 import re
+from collections import defaultdict
+import json
 
 GH_TOKEN = os.getenv("GH_TOKEN")
 
@@ -46,13 +48,8 @@ def read_repo_data(owner: str, name: str) -> list[dict[str, object]]:
 
 vladflore_dot_tech_docs = read_repo_data("vladflore", "vladflore.tech.private")
 
-print(len(vladflore_dot_tech_docs))
-
-for md in vladflore_dot_tech_docs:
-    print(md["filename"])
-    # print(md["content"])
-
-# print(vladflore_dot_tech_docs[1])
+print(f"{len(vladflore_dot_tech_docs)} posts")
+print(vladflore_dot_tech_docs[1].keys())
 
 
 def sliding_window(seq, size, step):
@@ -79,12 +76,6 @@ for doc in vladflore_dot_tech_docs:
     for doc_section in chunks:
         doc_section.update(doc_copy)
     docs_sections.extend(chunks)
-
-# print(len(docs_sections))
-
-# for doc_section in docs_sections[:10]:
-#     print(f"{doc_section['start']} - {doc_section['filename']}")
-#     print(doc_section['chunk'])
 
 
 def split_markdown_by_level(text, level=2):
@@ -121,11 +112,16 @@ for doc in vladflore_dot_tech_docs:
         doc_section["section"] = section
         docs_sections.append(doc_section)
 
-print(len(docs_sections))
 
-for doc_section in docs_sections[:3]:
-    print(f"{doc_section['title']}")
-    print(f"{doc_section['filename']}")
-    print(f"{doc_section['section'][:100]}")
+print(f"{len(docs_sections)} sections")
 
-# print(docs_sections[0].keys())
+print(json.dumps(docs_sections[0], default=str, indent=2))
+
+title_counts = defaultdict(int)
+for doc_section in docs_sections:
+    title_counts[doc_section["title"]] += 1
+
+for title, count in title_counts.items():
+    print(f"{title}: {count} sections")
+
+assert len(docs_sections) == sum(title_counts.values())
