@@ -7,7 +7,6 @@ import json
 blog_posts = download_repository_data("vladflore", "vladflore.tech.private")
 
 print(f"{len(blog_posts)} posts")
-print(blog_posts[1].keys())
 
 # docs_sections = []
 # for doc in repository_data:
@@ -24,12 +23,10 @@ peek(sections)
 
 save_to_file("blog.json", sections)
 
-client: weaviate.WeaviateClient = weaviate.connect_to_local()
-
-create_collection(client, "Blog")
-
-with open("blog.json", "r", encoding="utf-8") as f:
-    data: List[Dict[str, Union[str, List[str]]]] = json.load(f)
-    load_data(client, "Blog", data)
-
-client.close()
+if sections:
+    client: weaviate.WeaviateClient = weaviate.connect_to_local()
+    create_collection(client, "Blog")
+    with open("blog.json", "r", encoding="utf-8") as f:
+        data: List[Dict[str, Union[str, List[str]]]] = json.load(f)
+        load_data(client, "Blog", data)
+    client.close()

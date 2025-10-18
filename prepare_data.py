@@ -28,8 +28,8 @@ def download_repository_data(
 
     with zipfile.ZipFile(io.BytesIO(response.content)) as zf:
         for file_info in zf.infolist():
-            filename = file_info.filename.lower()
 
+            filename = file_info.filename.lower()
             if "/content/posts/" not in filename:
                 continue
 
@@ -42,7 +42,7 @@ def download_repository_data(
                     post = frontmatter.loads(content)
                     data = post.to_dict()
                     del data["images"]
-                    data["filename"] = filename
+                    data["filename"] = os.path.basename(filename)
                     repository_data.append(data)
             except Exception as e:
                 print(f"Error processing {filename}: {e}")
