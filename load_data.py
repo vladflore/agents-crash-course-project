@@ -1,14 +1,15 @@
 import weaviate
 import json
 from weaviate.classes.config import Configure
+from typing import Any, Dict, List, Union
 
 
-def create_collection(collection_name: str):
-    collection_exists = client.collections.exists(collection_name)
+def create_collection(client: weaviate.WeaviateClient, collection_name: str) -> None:
+    collection_exists: bool = client.collections.exists(collection_name)
     if collection_exists:
         print(f"{collection_name} exists and will be deleted.")
         client.collections.delete(collection_name)
-        collections = client.collections.list_all()
+        collections: List[str] = client.collections.list_all()
         if collection_name not in collections:
             print(f"{collection_name} successfully deleted.")
 
@@ -31,15 +32,19 @@ def create_collection(collection_name: str):
         print(f"{collection_name} created successfully.")
 
 
-def load_data(collection_name: str, data: list[dict[str, str | list[str]]]):
+def load_data(
+    client: weaviate.WeaviateClient,
+    collection_name: str,
+    data: List[Dict[str, Union[str, List[str]]]],
+) -> None:
     collection = client.collections.use(collection_name)
     with collection.batch.fixed_size(batch_size=5) as batch:
         for count, blog_post_section in enumerate(data):
-            title = blog_post_section.get("title", "No Title")
-            date = blog_post_section.get("date", "No Date")
-            tags = blog_post_section.get("tags", [])
-            filename = blog_post_section.get("filename", "No Filename")
-            section = blog_post_section.get("section", "No Section")
+            title: str = blog_post_section.get("title", "No Title")
+            date: str = blog_post_section.get("date", "No Date")
+            tags: List[str] = blog_post_section.get("tags", [])
+            filename: str = blog_post_section.get("filename", "No Filename")
+            section: str = blog_post_section.get("section", "No Section")
 
             batch.add_object(
                 {
@@ -57,19 +62,7 @@ def load_data(collection_name: str, data: list[dict[str, str | list[str]]]):
                 print("Batch import stopped due to excessive errors.")
                 break
 
-    failed_objects = collection.batch.failed_objects
+    failed_objects: List[Any] = collection.batch.failed_objects
     if failed_objects:
         print(f"Number of failed imports: {len(failed_objects)}")
         print(f"First failed object: {failed_objects[0].message}")
-
-
-if __name__ == "__main__":
-    client = weaviate.connect_to_local()
-
-    create_collection("Blog")
-
-    with open("blog.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-        load_data("Blog", data)
-
-    client.close()
