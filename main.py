@@ -4,6 +4,8 @@ import weaviate
 from load_data import create_collection, load_data
 import json
 
+BLOG_POSTS_FILE = "blog.json"
+
 blog_posts = download_repository_data("vladflore", "vladflore.tech.private")
 
 print(f"{len(blog_posts)} posts")
@@ -21,12 +23,12 @@ sections = posts_sections(blog_posts)
 
 peek(sections)
 
-save_to_file("blog.json", sections)
+save_to_file(BLOG_POSTS_FILE, sections)
 
 if sections:
     client: weaviate.WeaviateClient = weaviate.connect_to_local()
     create_collection(client, "Blog")
-    with open("blog.json", "r", encoding="utf-8") as f:
+    with open(BLOG_POSTS_FILE, "r", encoding="utf-8") as f:
         data: List[Dict[str, Union[str, List[str]]]] = json.load(f)
         load_data(client, "Blog", data)
     client.close()
