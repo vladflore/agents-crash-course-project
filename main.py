@@ -21,7 +21,7 @@ print(f"{len(blog_posts)} posts")
 
 sections = posts_sections(blog_posts)
 
-peek(sections)
+# peek(sections)
 
 save_to_file(BLOG_POSTS_FILE, sections)
 
@@ -29,6 +29,5 @@ if sections:
     client: weaviate.WeaviateClient = weaviate.connect_to_local()
     create_collection(client, "Blog")
     with open(BLOG_POSTS_FILE, "r", encoding="utf-8") as f:
-        data: List[Dict[str, Union[str, List[str]]]] = json.load(f)
-        load_data(client, "Blog", data)
+        load_data(client, "Blog", json.load(f))
     client.close()

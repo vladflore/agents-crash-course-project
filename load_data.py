@@ -44,15 +44,23 @@ def load_data(
             date: str = blog_post_section.get("date", "No Date")
             tags: List[str] = blog_post_section.get("tags", [])
             filename: str = blog_post_section.get("filename", "No Filename")
-            section: str = blog_post_section.get("section", "No Section")
-
+            section: str = blog_post_section.get("content", "No Content")
+            index: int = blog_post_section.get("index", 0)
+            header_hierarchy: Dict[str, str] = blog_post_section.get(
+                "header_hierarchy", {}
+            )
             batch.add_object(
                 {
                     "title": title,
-                    "date": date,
-                    "tags": tags,
-                    "filename": filename,
+                    # "date": date,
+                    # "tags": tags,
+                    # "filename": filename,
                     "section": section,
+                    # "index": index,
+                    "header_hierarchy": " > ".join(
+                        f"{header_level}: {header_text}"
+                        for header_level, header_text in header_hierarchy.items()
+                    ),
                 }
             )
 
@@ -66,3 +74,6 @@ def load_data(
     if failed_objects:
         print(f"Number of failed imports: {len(failed_objects)}")
         print(f"First failed object: {failed_objects[0].message}")
+    
+    response = collection.aggregate.over_all(total_count=True)
+    print(response.total_count)

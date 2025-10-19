@@ -6,7 +6,12 @@ import os
 import re
 from collections import defaultdict
 import json
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
+from langchain_text_splitters import (
+    MarkdownHeaderTextSplitter,
+    RecursiveCharacterTextSplitter,
+)
+
 
 GH_TOKEN = os.getenv("GH_TOKEN")
 
@@ -92,16 +97,19 @@ def split_markdown_by_level(text: str, level: int = 2) -> List[str]:
 
 
 def posts_sections(blog_posts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    docs_sections: List[Dict[str, Any]] = []
-    for doc in blog_posts:
-        doc_copy = doc.copy()
-        doc_content = doc_copy.pop("content")
-        sections = split_markdown_by_level(doc_content, level=2)
-        for section in sections:
-            doc_section = doc_copy.copy()
-            doc_section["section"] = section
-            docs_sections.append(doc_section)
-    return docs_sections
+    posts_sections: List[Dict[str, Any]] = []
+    for post in blog_posts:
+        post_copy = post.copy()
+        post_content = post_copy.pop("content")
+        # post_sections = split_markdown_by_level(post_content, level=2)
+        post_chunks = chunk_markdown_text(post_content)
+
+        for chunk in post_chunks:
+            post_section = post_copy.copy()
+            post_section.update(chunk)
+            posts_sections.append(post_section)
+
+    return posts_sections
 
 
 def peek(sections: List[Dict[str, Any]]) -> None:
@@ -122,3 +130,34 @@ def peek(sections: List[Dict[str, Any]]) -> None:
 def save_to_file(filename: str, sections: List[Dict[str, Any]]) -> None:
     with open(filename, "w", encoding="utf-8") as f_out:
         json.dump(sections, f_out, indent=2, default=str)
+
+
+def chunk_markdown_text(markdown_text: str) -> List[Dict[str, Any]]:
+    splitter = MarkdownHeaderTextSplitter(
+        headers_to_split_on=[
+            ("#", "Header 1"),
+            ("##", "Header 2"),
+            ("###", "Header 3"),
+        ]
+    )
+
+    sections_by_header = splitter.split_text(markdown_text)
+
+    chunk_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+        chunk_size=800, chunk_overlap=100
+    )
+
+    chunks = []
+
+    for section in sections_by_header:
+        text_chunks = chunk_splitter.split_text(section.page_content)
+        for i, chunk in enumerate(text_chunks):
+            chunks.append(
+                {
+                    "content": chunk,
+                    "index": i,
+                    "header_hierarchy": section.metadata,
+                }
+            )
+
+    return chunks
