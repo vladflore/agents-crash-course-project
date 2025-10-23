@@ -1,7 +1,10 @@
 import weaviate
-import json
+
+# import json
 from weaviate.classes.config import Configure
 from typing import Any, Dict, List, Union
+from weaviate.classes.config import Configure, DataType, Property
+import tqdm
 
 
 def create_collection(client: weaviate.WeaviateClient, collection_name: str) -> None:
@@ -17,9 +20,14 @@ def create_collection(client: weaviate.WeaviateClient, collection_name: str) -> 
 
     _ = client.collections.create(
         name=collection_name,
+        properties=[
+            Property(name="title", data_type=DataType.TEXT),
+            Property(name="section", data_type=DataType.TEXT),
+            Property(name="header_hierarchy", data_type=DataType.TEXT),
+        ],
         vector_config=Configure.Vectors.text2vec_ollama(
             api_endpoint="http://host.docker.internal:11434",
-            model="mxbai-embed-large",
+            model="embeddinggemma",
         ),
         generative_config=Configure.Generative.ollama(
             api_endpoint="http://host.docker.internal:11434",
@@ -39,13 +47,13 @@ def load_data(
 ) -> None:
     collection = client.collections.use(collection_name)
     with collection.batch.fixed_size(batch_size=5) as batch:
-        for count, blog_post_section in enumerate(data):
+        for count, blog_post_section in tqdm.tqdm(enumerate(data)):
             title: str = blog_post_section.get("title", "No Title")
-            date: str = blog_post_section.get("date", "No Date")
+            # date: str = blog_post_section.get("date", "No Date")
             tags: List[str] = blog_post_section.get("tags", [])
-            filename: str = blog_post_section.get("filename", "No Filename")
+            # filename: str = blog_post_section.get("filename", "No Filename")
             section: str = blog_post_section.get("content", "No Content")
-            index: int = blog_post_section.get("index", 0)
+            # index: int = blog_post_section.get("index", 0)
             header_hierarchy: Dict[str, str] = blog_post_section.get(
                 "header_hierarchy", {}
             )
@@ -64,8 +72,6 @@ def load_data(
                 }
             )
 
-            print(f"{count + 1} / {len(data)} added.")
-
             if batch.number_errors > 10:
                 print("Batch import stopped due to excessive errors.")
                 break
@@ -74,6 +80,6 @@ def load_data(
     if failed_objects:
         print(f"Number of failed imports: {len(failed_objects)}")
         print(f"First failed object: {failed_objects[0].message}")
-    
+
     response = collection.aggregate.over_all(total_count=True)
     print(response.total_count)
